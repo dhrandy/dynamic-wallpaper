@@ -1,0 +1,6 @@
+[Unit]
+Description=Set wallpaper based on time of day (sunrise/sunset)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/dynamic-wallpaper.py --lat YOUR_LAT --lon YOUR_LON
