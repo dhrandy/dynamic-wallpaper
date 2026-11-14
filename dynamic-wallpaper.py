@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Set your KDE Plasma wallpaper based on the time of day.
 
-Picks one of three images (day, dusk/dawn, night) using your real
+Picks one of four images (day, dawn, dusk, night) using your real
 sunrise and sunset times, calculated from your latitude and longitude.
 No network needed, no extra packages, just Python 3.
 
 How it decides:
-  dawn/dusk:  30 minutes either side of sunrise and sunset -> duskdawn image
-  day:        sunrise + 30 min to sunset - 30 min          -> day image
-  night:      everything else                              -> night image
+  dawn:  30 minutes either side of sunrise -> dawn image
+  day:   sunrise + 30 min to sunset - 30 min -> day image
+  dusk:  30 minutes either side of sunset -> dusk image
+  night: everything else -> night image
+
+If you only have three images, pass the same file for --dawn and --dusk.
 
 It only changes the wallpaper when the image is different from last
 time, so it is cheap to run every few minutes from a systemd timer.
@@ -52,14 +55,16 @@ def sun_times_utc(day, lat, lon):
             base + timedelta(minutes=sunset_min))
 
 
-def pick_image(now, sunrise, sunset, window, day_img, duskdawn_img, night_img):
+def pick_image(now, sunrise, sunset, window, day_img, dawn_img, dusk_img, night_img):
     """Pick the right image for the current time. Returns (image, period name)."""
     dawn_start = sunrise - timedelta(minutes=window)
     dawn_end = sunrise + timedelta(minutes=window)
     dusk_start = sunset - timedelta(minutes=window)
     dusk_end = sunset + timedelta(minutes=window)
-    if dawn_start <= now < dawn_end or dusk_start <= now < dusk_end:
-        return duskdawn_img, "duskdawn"
+    if dawn_start <= now < dawn_end:
+        return dawn_img, "dawn"
+    if dusk_start <= now < dusk_end:
+        return dusk_img, "dusk"
     if dawn_end <= now < dusk_start:
         return day_img, "day"
     return night_img, "night"
@@ -75,12 +80,14 @@ def main():
                         help="Your longitude in decimal degrees, negative for west (e.g. -74.00)")
     parser.add_argument("--day", default=str(home / "Pictures/Wallpaper/day.jpg"),
                         help="Daytime image (default: ~/Pictures/Wallpaper/day.jpg)")
-    parser.add_argument("--duskdawn", default=str(home / "Pictures/Wallpaper/duskdawn.jpg"),
-                        help="Dawn/dusk image (default: ~/Pictures/Wallpaper/duskdawn.jpg)")
+    parser.add_argument("--dawn", default=str(home / "Pictures/Wallpaper/dawn.jpg"),
+                        help="Dawn image (default: ~/Pictures/Wallpaper/dawn.jpg)")
+    parser.add_argument("--dusk", default=str(home / "Pictures/Wallpaper/dusk.jpg"),
+                        help="Dusk image (default: ~/Pictures/Wallpaper/dusk.jpg)")
     parser.add_argument("--night", default=str(home / "Pictures/Wallpaper/night.jpg"),
                         help="Night image (default: ~/Pictures/Wallpaper/night.jpg)")
     parser.add_argument("--window", type=int, default=30,
-                        help="Minutes either side of sunrise/sunset to use the dusk/dawn image (default: 30)")
+                        help="Minutes either side of sunrise/sunset to use the dawn/dusk image (default: 30)")
     parser.add_argument("--state", default=str(home / ".cache/dynamic-wallpaper.state"),
                         help="File that remembers the last image used (default: ~/.cache/dynamic-wallpaper.state)")
     args = parser.parse_args()
@@ -91,7 +98,7 @@ def main():
     sunset = sunset_utc.astimezone(now.tzinfo)
 
     img, period = pick_image(now, sunrise, sunset, args.window,
-                             args.day, args.duskdawn, args.night)
+                             args.day, args.dawn, args.dusk, args.night)
 
     # Only change the wallpaper if it is different from last time.
     last = ""
