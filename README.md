@@ -2,32 +2,37 @@
 
 A tiny Python script that changes your wallpaper based on the time of day,
 using your real sunrise and sunset times. No network, no extra packages,
-just Python 3 and three images.
+just Python 3 and four images.
 
-It picks one of three wallpapers:
+It picks one of four wallpapers:
 
+- **Dawn** — 30 minutes either side of sunrise
 - **Day** — from 30 minutes after sunrise until 30 minutes before sunset
-- **Dusk/dawn** — 30 minutes either side of sunrise and sunset
+- **Dusk** — 30 minutes either side of sunset
 - **Night** — everything else
 
 Sunrise and sunset are calculated from your latitude and longitude, so they
 stay correct all year as the days get longer and shorter.
 
+If you only have three images, use the same file for dawn and dusk. See
+"How to edit it" below.
+
 ## What you need
 
 - KDE Plasma (uses `plasma-apply-wallpaperimage`)
 - Python 3 (already on most Linux systems)
-- Three wallpaper images: one for day, one for dusk/dawn, one for night
+- Four wallpaper images: one for day, one for dawn, one for dusk, one for night
 
 ## Quick start
 
 **1. Put your images in place.**
 
-Save three images as:
+Save four images as:
 
 ```
 ~/Pictures/Wallpaper/day.jpg
-~/Pictures/Wallpaper/duskdawn.jpg
+~/Pictures/Wallpaper/dawn.jpg
+~/Pictures/Wallpaper/dusk.jpg
 ~/Pictures/Wallpaper/night.jpg
 ```
 
@@ -83,7 +88,18 @@ Point each period at a different file:
 ```bash
 python3 dynamic-wallpaper.py --lat 40.71 --lon -74.00 \
   --day ~/Pictures/morning.png \
-  --duskdawn ~/Pictures/sunset.png \
+  --dawn ~/Pictures/sunrise.png \
+  --dusk ~/Pictures/sunset.png \
+  --night ~/Pictures/stars.png
+```
+
+If you only have three images, pass the same file for `--dawn` and `--dusk`:
+
+```bash
+python3 dynamic-wallpaper.py --lat 40.71 --lon -74.00 \
+  --day ~/Pictures/morning.png \
+  --dawn ~/Pictures/golden-hour.png \
+  --dusk ~/Pictures/golden-hour.png \
   --night ~/Pictures/stars.png
 ```
 
@@ -97,17 +113,17 @@ Just change `--lat` and `--lon`. Find your numbers the same way as in the
 quick start. No other changes needed, sunrise and sunset are recalculated
 every run.
 
-### Change how long dusk/dawn lasts
+### Change how long dawn and dusk last
 
-The dusk/dawn image covers 30 minutes either side of sunrise and sunset by
-default. To make it 45 minutes instead:
+The dawn and dusk images each cover 30 minutes either side of sunrise and
+sunset by default. To make them 45 minutes instead:
 
 ```bash
 python3 dynamic-wallpaper.py --lat 40.71 --lon -74.00 --window 45
 ```
 
 Set `--window 0` if you want it to switch straight from day to night with
-no dusk/dawn period.
+no dawn or dusk period.
 
 ### Change how often it checks
 
@@ -125,10 +141,9 @@ tiny bit of CPU every few minutes.
 
 ### Use different images for dawn and dusk
 
-The script uses one image for both dawn and dusk. If you want separate
-images, that is a code change: split the `pick_image` function so the
-sunrise window and the sunset window return different images, and add a
-`--dawn` and `--dusk` option to match. The rest of the script stays the same.
+That is the default now, four images with `--dawn` and `--dusk` as separate
+options. If you only have one golden-hour image, pass the same file for both,
+see "Change your images" above.
 
 ## How it works
 
