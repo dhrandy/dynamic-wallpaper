@@ -127,8 +127,9 @@ no dawn or dusk period.
 
 ### Change how often it checks
 
-Edit `dynamic-wallpaper.timer` and change `OnUnitActiveSec=5min` to whatever
-you want, for example `10min` or `1min`. Then run:
+Edit `dynamic-wallpaper.timer` and change `OnCalendar=*:0/5` to whatever
+you want, for example `*:0/10` for every 10 minutes or `*:0/1` for every
+minute. Then run:
 
 ```bash
 systemctl --user daemon-reload
@@ -138,6 +139,11 @@ systemctl --user restart dynamic-wallpaper.timer
 Five minutes is plenty. The script only changes the wallpaper when the
 period changes, so checking more often does not cost anything except a
 tiny bit of CPU every few minutes.
+
+The timer uses a wall-clock schedule (`OnCalendar`) with `Persistent=true`,
+so if the PC was asleep when a run was due, it fires immediately on wake
+instead of waiting for the next interval. It also runs one minute after boot
+(`OnBootSec=1min`).
 
 ### Use different images for dawn and dusk
 
